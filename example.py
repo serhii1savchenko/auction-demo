@@ -22,11 +22,14 @@ def simple_auction():
     print("Generating temporary accounts...")
     creator = getTemporaryAccount(client)
     seller = getTemporaryAccount(client)
-    bidder = getTemporaryAccount(client)
+    bidder1 = getTemporaryAccount(client)
+    bidder2 = getTemporaryAccount(client)
 
     print("Alice (seller account):", seller.getAddress())
     print("Bob (auction creator account):", creator.getAddress())
-    print("Carla (bidder account)", bidder.getAddress(), "\n")
+    print("Carla (bidder 1 account)", bidder1.getAddress())
+    print("Marla (bidder 2 account)", bidder2.getAddress(), "\n")
+
 
     print("Alice is generating an example NFT...")
     nftAmount = 1
@@ -35,10 +38,11 @@ def simple_auction():
     print("Alice's balances:", getBalances(client, seller.getAddress()), "\n")
 
     startTime = int(time()) + 10  # start time is 10 seconds in the future
-    endTime = startTime + 30  # end time is 30 seconds after start
+    endTime = startTime + 60  # end time is 60 seconds after start
+    print("--- --- --- End time = ", endTime)
     reserve = 1_000_000  # 1 Algo
     increment = 100_000  # 0.1 Algo
-    print("Bob is creating an auction that lasts 30 seconds to auction off the NFT...")
+    print("Bob is creating an auction that lasts 60 seconds to auction off the NFT...")
     appID = createAuctionApp(
         client=client,
         sender=creator,
@@ -79,16 +83,16 @@ def simple_auction():
     print("Auction escrow balances:", actualAppBalancesBefore, "\n")
 
     bidAmount = reserve
-    bidderBalancesBefore = getBalances(client, bidder.getAddress())
+    bidderBalancesBefore = getBalances(client, bidder1.getAddress())
     bidderAlgosBefore = bidderBalancesBefore[0]
     print("Carla wants to bid on NFT, her balances:", bidderBalancesBefore)
     print("Carla is placing bid for", bidAmount, "microAlgos")
 
-    placeBid(client=client, appID=appID, bidder=bidder, bidAmount=bidAmount)
+    placeBid(client=client, appID=appID, bidder=bidder1, bidAmount=bidAmount)
 
     print("Carla is opting into NFT with ID", nftID)
 
-    optInToAsset(client, nftID, bidder)
+    optInToAsset(client, nftID, bidder1)
 
     print("Done\n")
 
@@ -106,12 +110,12 @@ def simple_auction():
     print("The auction escrow now holds the following:", actualAppBalances)
     assert actualAppBalances == expectedAppBalances
 
-    bidderNftBalance = getBalances(client, bidder.getAddress())[nftID]
+    bidderNftBalance = getBalances(client, bidder1.getAddress())[nftID]
     assert bidderNftBalance == nftAmount
 
     actualSellerBalances = getBalances(client, seller.getAddress())
     print("Alice's balances after auction: ", actualSellerBalances, " Algos")
-    actualBidderBalances = getBalances(client, bidder.getAddress())
+    actualBidderBalances = getBalances(client, bidder1.getAddress())
     print("Carla's balances after auction: ", actualBidderBalances, " Algos")
     assert len(actualSellerBalances) == 2
     # seller should receive the bid amount, minus the txn fee
